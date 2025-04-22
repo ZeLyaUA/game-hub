@@ -127,14 +127,15 @@ const ClassGuidesSection = forwardRef<HTMLElement, ClassGuidesSectionProps>(
                   <motion.h3 className="font-bold text-lg mb-3 group-hover:text-indigo-400 transition-colors duration-300 line-clamp-2">
                     {guide.title}
                   </motion.h3>
-                  <Link href={guide.url} passHref>
-                    <motion.a
-                      className="inline-flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium group"
-                      whileHover={{ x: 5 }}
-                    >
+                  <Link
+                    href={guide.url}
+                    passHref
+                    className="inline-flex items-center text-indigo-400 hover:text-indigo-300 text-sm font-medium group"
+                  >
+                    <motion.div whileHover={{ x: 5 }}>
                       <span>Читать руководство</span>
                       <ChevronRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" />
-                    </motion.a>
+                    </motion.div>
                   </Link>
                 </div>
               </motion.div>
@@ -147,15 +148,15 @@ const ClassGuidesSection = forwardRef<HTMLElement, ClassGuidesSectionProps>(
             animate={inView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <Link href="/guides" passHref>
-              <motion.a
-                className="inline-flex items-center bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 font-medium py-3 px-6 rounded-lg transition-all duration-300"
-                whileHover={{ y: -5 }}
-                whileTap={{ y: 0 }}
-              >
+            <Link
+              href="/guides"
+              passHref
+              className="inline-flex items-center bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 font-medium py-3 px-6 rounded-lg transition-all duration-300"
+            >
+              <motion.div whileHover={{ y: -5 }} whileTap={{ y: 0 }}>
                 Все руководства
                 <ChevronRight className="h-5 w-5 ml-1" />
-              </motion.a>
+              </motion.div>
             </Link>
           </motion.div>
         </div>

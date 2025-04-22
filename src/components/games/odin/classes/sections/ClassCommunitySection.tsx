@@ -1,5 +1,6 @@
 'use client';
 
+import { formatNumber } from '@/utils/format';
 import { motion } from 'framer-motion';
 import { MessageSquare, Trophy, Users } from 'lucide-react';
 import { forwardRef } from 'react';
@@ -184,7 +185,7 @@ const ClassCommunitySection = forwardRef<HTMLElement, ClassCommunitySectionProps
                         </div>
                       </div>
                       <div className="text-indigo-400 font-medium">
-                        {player.score.toLocaleString()}
+                        {formatNumber(player.score)}
                       </div>
                     </div>
                   ))}

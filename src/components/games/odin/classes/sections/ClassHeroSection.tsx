@@ -68,7 +68,7 @@ const ClassHeroSection = forwardRef<HTMLElement, ClassHeroSectionProps>(
         <div className="container mx-auto px-4 relative z-10 py-24">
           <div className="mb-10">
             <Link
-              href="/games/odin/classes"
+              href="/games/odin"
               className="inline-flex items-center text-gray-400 hover:text-white transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
