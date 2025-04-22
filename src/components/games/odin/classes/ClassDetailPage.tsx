@@ -8,7 +8,6 @@ import ClassGearSection from './sections/ClassGearSection';
 import ClassGuidesSection from './sections/ClassGuidesSection';
 import ClassHeroSection from './sections/ClassHeroSection';
 import ClassLoreSection from './sections/ClassLoreSection';
-import ClassSkillsSection from './sections/ClassSkillsSection';
 import ClassSpecializationsSection from './sections/ClassSpecializationsSection';
 
 type ClassDetailPageProps = {
@@ -23,7 +22,6 @@ export default function ClassDetailPage({ classInfo }: ClassDetailPageProps) {
     triggerOnce: true,
     threshold: 0.1,
   });
-  const [skillsRef, skillsInView] = useInView({ triggerOnce: true, threshold: 0.1 });
   const [gearRef, gearInView] = useInView({ triggerOnce: true, threshold: 0.1 });
   const [guidesRef, guidesInView] = useInView({ triggerOnce: true, threshold: 0.1 });
   const [communityRef, communityInView] = useInView({ triggerOnce: true, threshold: 0.1 });
@@ -37,7 +35,6 @@ export default function ClassDetailPage({ classInfo }: ClassDetailPageProps) {
         inView={specializationsInView}
         specializations={classInfo.specializations}
       />
-      <ClassSkillsSection ref={skillsRef} inView={skillsInView} skills={classInfo.skills} />
       <ClassGearSection ref={gearRef} inView={gearInView} gear={classInfo.recommendedGear} />
       <ClassGuidesSection ref={guidesRef} inView={guidesInView} guides={classInfo.guides} />
       <ClassCommunitySection

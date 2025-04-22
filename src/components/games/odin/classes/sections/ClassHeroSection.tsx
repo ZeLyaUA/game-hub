@@ -6,39 +6,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { forwardRef } from 'react';
 
+import {
+  advantageColors,
+  difficultyColors,
+  disadvantageColors,
+  roleColors,
+} from '@/utils/colorMapping';
 import { ClassInfo } from '../data';
 
 type ClassHeroSectionProps = {
   inView: boolean;
   classInfo: ClassInfo;
-};
-
-// Цвета для бейджей преимуществ/недостатков
-const advantageColors = [
-  'bg-green-500/20 text-green-400 border-green-500/30',
-  'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-  'bg-blue-500/20 text-blue-400 border-blue-500/30',
-];
-
-const disadvantageColors = [
-  'bg-red-500/20 text-red-400 border-red-500/30',
-  'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  'bg-pink-500/20 text-pink-400 border-pink-500/30',
-];
-
-// Цвета для сложности
-const difficultyColors = {
-  Легкий: 'bg-green-500/20 text-green-400 border-green-500/30',
-  Средний: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  Сложный: 'bg-red-500/20 text-red-400 border-red-500/30',
-};
-
-// Цвета для ролей
-const roleColors = {
-  Танк: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  Урон: 'bg-red-500/20 text-red-400 border-red-500/30',
-  Поддержка: 'bg-green-500/20 text-green-400 border-green-500/30',
-  Контроль: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
 };
 
 const ClassHeroSection = forwardRef<HTMLElement, ClassHeroSectionProps>(
@@ -121,6 +99,7 @@ const ClassHeroSection = forwardRef<HTMLElement, ClassHeroSectionProps>(
 
               <p className="text-xl text-gray-300 mb-8 leading-relaxed">{classInfo.description}</p>
 
+              {/* Сильные и слабые стороны */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <h3 className="flex items-center text-lg font-semibold mb-3 text-green-400">

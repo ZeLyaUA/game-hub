@@ -1,3 +1,14 @@
+// Упрощенный файл data.ts с минимальным набором навыков
+
+export type ClassArchetype = {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  role: 'Танк' | 'Урон' | 'Поддержка' | 'Контроль';
+  skills: ClassSkill[];
+};
+
 export type ClassSpecialization = {
   id: string;
   name: string;
@@ -12,9 +23,10 @@ export type ClassSkill = {
   id: string;
   name: string;
   description: string;
-  cooldown: string;
-  type: 'Атакующий' | 'Защитный' | 'Поддержка' | 'Контроль' | 'Движение';
+  cooldown?: string;
+  type: 'Атакующий' | 'Защитный' | 'Поддержка' | 'Контроль' | 'Движение' | 'Усиление' | 'Пассивный';
   image: string;
+  isPassive?: boolean;
 };
 
 export type ClassGear = {
@@ -50,6 +62,7 @@ export type ClassInfo = {
   disadvantages: string[];
   difficulty: 'Легкий' | 'Средний' | 'Сложный';
   roles: ('Танк' | 'Урон' | 'Поддержка' | 'Контроль')[];
+  archetypes: ClassArchetype[];
   specializations: ClassSpecialization[];
   skills: ClassSkill[];
   recommendedGear: ClassGear[];
@@ -75,6 +88,68 @@ export const classData: ClassInfo[] = [
     ],
     difficulty: 'Средний',
     roles: ['Танк', 'Контроль', 'Урон'],
+    archetypes: [
+      {
+        id: 'berserker',
+        name: 'Берсерк',
+        icon: '/classes/archetypes/berserker-icon.png',
+        description:
+          'Элитный воин, специализирующийся на атаке и высоком уроне. Использует ярость для усиления своих атак.',
+        role: 'Урон',
+        skills: [
+          {
+            id: 'berserker-rage',
+            name: 'Неистовство',
+            description:
+              'Повышает урон на 25% и скорость атаки на 15% на 10 секунд, но снижает защиту на 10%',
+            cooldown: '30 сек',
+            type: 'Усиление',
+            image: '/classes/skills/berserker-rage.png',
+            isPassive: false,
+          },
+          {
+            id: 'battle-fury',
+            name: 'Боевое неистовство',
+            description:
+              'Пассивный навык: когда здоровье падает ниже 30%, урон увеличивается на 20% на 8 секунд (срабатывает раз в 60 сек)',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/battle-fury.png',
+            isPassive: true,
+          },
+        ],
+      },
+      {
+        id: 'defender',
+        name: 'Защитник',
+        icon: '/classes/archetypes/defender-icon.png',
+        description:
+          'Непробиваемый танк, защищающий союзников и контролирующий поле боя с помощью щита и оборонительных навыков.',
+        role: 'Танк',
+        skills: [
+          {
+            id: 'shield-wall',
+            name: 'Стена щитов',
+            description:
+              'Воин поднимает щит, уменьшая получаемый урон на 40% на 5 секунд и отражая 15% полученного урона обратно.',
+            cooldown: '20 сек',
+            type: 'Защитный',
+            image: '/classes/skills/shield-wall.png',
+            isPassive: false,
+          },
+          {
+            id: 'iron-skin',
+            name: 'Железная кожа',
+            description:
+              'Пассивный навык: увеличивает физическую и магическую защиту на 15%, дополнительно на 10% когда здоровье ниже 40%',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/iron-skin.png',
+            isPassive: true,
+          },
+        ],
+      },
+    ],
     specializations: [
       {
         id: 'berserker',
@@ -116,31 +191,6 @@ export const classData: ClassInfo[] = [
         type: 'Контроль',
         image: '/classes/skills/shield-bash.png',
       },
-      {
-        id: 'battle-cry',
-        name: 'Боевой клич',
-        description:
-          'Грозный крик, увеличивающий урон союзников и снижающий защиту противников в области действия.',
-        cooldown: '45 сек',
-        type: 'Поддержка',
-        image: '/classes/skills/battle-cry.png',
-      },
-      {
-        id: 'charge',
-        name: 'Рывок',
-        description: 'Стремительный рывок к цели, наносящий урон и оглушающий её при столкновении.',
-        cooldown: '20 сек',
-        type: 'Движение',
-        image: '/classes/skills/charge.png',
-      },
-      {
-        id: 'shield-wall',
-        name: 'Стена щитов',
-        description: 'Воин поднимает щит, значительно уменьшая получаемый урон на 5 секунд.',
-        cooldown: '60 сек',
-        type: 'Защитный',
-        image: '/classes/skills/shield-wall.png',
-      },
     ],
     recommendedGear: [
       {
@@ -150,22 +200,6 @@ export const classData: ClassInfo[] = [
         rarity: 'Легендарный',
         stats: ['Сила +50', 'Крит. удар +15%', 'При ударе есть 10% шанс вызвать молнию'],
         image: '/classes/gear/mjolnir.png',
-      },
-      {
-        id: 'valhalla-plate',
-        name: 'Доспех Валгаллы',
-        type: 'Броня',
-        rarity: 'Эпический',
-        stats: ['Защита +100', 'Здоровье +500', 'Сопротивление стихиям +20%'],
-        image: '/classes/gear/valhalla-plate.png',
-      },
-      {
-        id: 'tyr-bracers',
-        name: 'Наручи Тюра',
-        type: 'Аксессуар',
-        rarity: 'Редкий',
-        stats: ['Сила +25', 'Скорость атаки +10%', 'Сопротивление оглушению +15%'],
-        image: '/classes/gear/tyr-bracers.png',
       },
     ],
     guides: [
@@ -178,26 +212,6 @@ export const classData: ClassInfo[] = [
         level: 'Начальный',
         image: '/classes/guides/warrior-leveling.jpg',
         url: '/guides/warrior-leveling',
-      },
-      {
-        id: 'berserker-pvp',
-        title: 'Берсерк в PvP: максимальный урон и выживаемость',
-        author: 'AxeMaster',
-        date: '10 апреля 2025',
-        type: 'PvP',
-        level: 'Продвинутый',
-        image: '/classes/guides/berserker-pvp.jpg',
-        url: '/guides/berserker-pvp',
-      },
-      {
-        id: 'defender-raid',
-        title: 'Защитник в рейдах: руководство для танков',
-        author: 'ShieldWall',
-        date: '5 апреля 2025',
-        type: 'PvE',
-        level: 'Средний',
-        image: '/classes/guides/defender-raid.jpg',
-        url: '/guides/defender-raid',
       },
     ],
   },
@@ -219,6 +233,68 @@ export const classData: ClassInfo[] = [
     ],
     difficulty: 'Сложный',
     roles: ['Урон', 'Контроль'],
+    archetypes: [
+      {
+        id: 'elementalist',
+        name: 'Элементалист',
+        icon: '/classes/archetypes/elementalist-icon.png',
+        description:
+          'Магический класс, специализирующийся на использовании стихийной магии огня, воды, воздуха и земли для нанесения мощного урона.',
+        role: 'Урон',
+        skills: [
+          {
+            id: 'thunderstorm',
+            name: 'Грозовая буря',
+            description:
+              'Призывает грозовую бурю в указанной области, которая наносит 5 ударов молнии за 4 секунды, каждый по 60% урона от магической силы.',
+            cooldown: '25 сек',
+            type: 'Атакующий',
+            image: '/classes/skills/thunderstorm.png',
+            isPassive: false,
+          },
+          {
+            id: 'elemental-harmony',
+            name: 'Стихийная гармония',
+            description:
+              'Пассивный навык: использование заклинания одной стихии повышает эффективность заклинаний противоположной стихии на 15% на 8 секунд.',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/elemental-harmony.png',
+            isPassive: true,
+          },
+        ],
+      },
+      {
+        id: 'warlock',
+        name: 'Чернокнижник',
+        icon: '/classes/archetypes/warlock-icon.png',
+        description:
+          'Магический класс, специализирующийся на темной магии, проклятиях и призыве демонических существ.',
+        role: 'Контроль',
+        skills: [
+          {
+            id: 'fear',
+            name: 'Страх',
+            description:
+              'Заставляет цель бежать в ужасе 4 секунды, не позволяя использовать способности.',
+            cooldown: '20 сек',
+            type: 'Контроль',
+            image: '/classes/skills/fear.png',
+            isPassive: false,
+          },
+          {
+            id: 'soul-harvest',
+            name: 'Жатва душ',
+            description:
+              'Пассивный навык: при убийстве противника восстанавливает 5% здоровья и маны, а также снижает перезарядку всех способностей на 1 секунду.',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/soul-harvest.png',
+            isPassive: true,
+          },
+        ],
+      },
+    ],
     specializations: [
       {
         id: 'elementalist',
@@ -243,7 +319,6 @@ export const classData: ClassInfo[] = [
         image: '/classes/specs/warlock.jpg',
       },
     ],
-    // Дополнить остальные данные по аналогии с классом Воин
     skills: [],
     recommendedGear: [],
     guides: [],
@@ -266,6 +341,68 @@ export const classData: ClassInfo[] = [
     ],
     difficulty: 'Средний',
     roles: ['Урон'],
+    archetypes: [
+      {
+        id: 'assassin',
+        name: 'Ассасин',
+        icon: '/classes/archetypes/assassin-icon.png',
+        description:
+          'Смертоносный мастер ближнего боя, использующий скрытность и внезапные атаки для устранения целей.',
+        role: 'Урон',
+        skills: [
+          {
+            id: 'backstab',
+            name: 'Удар в спину',
+            description:
+              'Скрытно перемещается за спину противника и наносит критический удар с 200% силы атаки и 100% шансом критического удара.',
+            cooldown: '15 сек',
+            type: 'Атакующий',
+            image: '/classes/skills/backstab.png',
+            isPassive: false,
+          },
+          {
+            id: 'shadow-mastery',
+            name: 'Мастерство теней',
+            description:
+              'Пассивный навык: после выхода из невидимости следующая атака наносит 50% дополнительного урона и имеет 100% шанс критического удара.',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/shadow-mastery.png',
+            isPassive: true,
+          },
+        ],
+      },
+      {
+        id: 'archer',
+        name: 'Лучник',
+        icon: '/classes/archetypes/archer-icon.png',
+        description:
+          'Мастер дальнего боя, использующий луки и арбалеты для точных и мощных атак с безопасной дистанции.',
+        role: 'Урон',
+        skills: [
+          {
+            id: 'precise-shot',
+            name: 'Точный выстрел',
+            description:
+              'Концентрированный выстрел, наносящий 180% урона от силы атаки и игнорирующий 30% защиты цели.',
+            cooldown: '10 сек',
+            type: 'Атакующий',
+            image: '/classes/skills/precise-shot.png',
+            isPassive: false,
+          },
+          {
+            id: 'hawk-eye',
+            name: 'Соколиный глаз',
+            description:
+              'Пассивный навык: увеличивает дальность атак на 20% и дает 15% шанс на дополнительную атаку при использовании обычных атак.',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/hawk-eye.png',
+            isPassive: true,
+          },
+        ],
+      },
+    ],
     specializations: [],
     skills: [],
     recommendedGear: [],
@@ -285,6 +422,68 @@ export const classData: ClassInfo[] = [
     disadvantages: ['Ограниченный урон', 'Зависимость от группы', 'Низкая мобильность'],
     difficulty: 'Легкий',
     roles: ['Поддержка', 'Контроль'],
+    archetypes: [
+      {
+        id: 'healer',
+        name: 'Целитель',
+        icon: '/classes/archetypes/healer-icon.png',
+        description:
+          'Посвященный священнослужитель, специализирующийся на исцелении ран союзников и поддержании их жизненных сил.',
+        role: 'Поддержка',
+        skills: [
+          {
+            id: 'healing-circle',
+            name: 'Круг исцеления',
+            description:
+              'Создает зону света, которая исцеляет всех союзников внутри на 60% от силы исцеления каждые 2 секунды в течение 10 секунд.',
+            cooldown: '25 сек',
+            type: 'Поддержка',
+            image: '/classes/skills/healing-circle.png',
+            isPassive: false,
+          },
+          {
+            id: 'blessed-hands',
+            name: 'Благословенные руки',
+            description:
+              'Пассивный навык: каждое третье заклинание исцеления дополнительно восстанавливает 10% от максимального здоровья цели.',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/blessed-hands.png',
+            isPassive: true,
+          },
+        ],
+      },
+      {
+        id: 'paladin',
+        name: 'Паладин',
+        icon: '/classes/archetypes/paladin-icon.png',
+        description:
+          'Священный воин, облаченный в тяжелые доспехи, сочетающий защитные способности с умеренным исцелением и атаками света.',
+        role: 'Танк',
+        skills: [
+          {
+            id: 'consecration',
+            name: 'Освящение',
+            description:
+              'Освящает землю под ногами, исцеляя союзников на 40% от силы исцеления и нанося урон врагам на 40% от силы атаки каждую секунду в течение 8 секунд.',
+            cooldown: '30 сек',
+            type: 'Поддержка',
+            image: '/classes/skills/consecration.png',
+            isPassive: false,
+          },
+          {
+            id: 'divine-armor',
+            name: 'Божественные доспехи',
+            description:
+              'Пассивный навык: увеличивает все характеристики брони на 15% и отражает 10% полученного урона обратно атакующему.',
+            cooldown: '',
+            type: 'Пассивный',
+            image: '/classes/skills/divine-armor.png',
+            isPassive: true,
+          },
+        ],
+      },
+    ],
     specializations: [],
     skills: [],
     recommendedGear: [],

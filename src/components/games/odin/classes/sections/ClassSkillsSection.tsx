@@ -5,20 +5,13 @@ import { Clock, Flame } from 'lucide-react';
 import Image from 'next/image';
 import { forwardRef, useState } from 'react';
 
+import { skillTypeColors } from '@/utils/colorMapping';
+
 import { ClassSkill } from '../data';
 
 type ClassSkillsSectionProps = {
   inView: boolean;
   skills: ClassSkill[];
-};
-
-// Цвета для типов умений
-const skillTypeColors = {
-  Атакующий: 'bg-red-500/20 text-red-400 border-red-500/30',
-  Защитный: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  Поддержка: 'bg-green-500/20 text-green-400 border-green-500/30',
-  Контроль: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  Движение: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
 };
 
 const ClassSkillsSection = forwardRef<HTMLElement, ClassSkillsSectionProps>(
