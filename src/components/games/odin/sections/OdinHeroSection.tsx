@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Award, Gamepad2, Info } from 'lucide-react';
+import { Award } from 'lucide-react';
 import { forwardRef } from 'react';
 
 type OdinHeroSectionProps = {
@@ -66,32 +66,6 @@ const OdinHeroSection = forwardRef<HTMLElement, OdinHeroSectionProps>(({ inView 
               Погрузитесь в эпический мир, вдохновленный скандинавской мифологией, с невероятной
               графикой и захватывающими сражениями
             </motion.p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <motion.button
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center group relative overflow-hidden"
-                whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.4)' }}
-                whileTap={{ y: 0, boxShadow: '0 0 0 0 rgba(99, 102, 241, 0)' }}
-              >
-                <span className="absolute w-0 h-0 transition-all duration-300 ease-out bg-white rounded-full group-hover:w-32 group-hover:h-32 opacity-10"></span>
-                <Gamepad2 className="h-5 w-5 mr-2" />
-                <span>Скачать клиент</span>
-              </motion.button>
-
-              <motion.button
-                className="bg-gray-700/70 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center"
-                whileHover={{ y: -5 }}
-                whileTap={{ y: 0 }}
-              >
-                <Info className="h-5 w-5 mr-2" />
-                <span>Информация об игре</span>
-              </motion.button>
-            </motion.div>
           </div>
 
           <motion.div
