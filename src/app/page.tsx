@@ -10,7 +10,7 @@ export default function HomePage() {
       <HeroSection />
       <FeaturesSection />
       <GamesList />
-      <StreamSection /> {/* Добавляем компонент стрим-каналов здесь */}
+      <StreamSection />
       <NewsSection />
     </>
   );

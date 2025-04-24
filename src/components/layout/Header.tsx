@@ -1,15 +1,19 @@
 'use client';
 
-import MobileMenu from '@/components/layout/MobileMenu';
+import { useTheme } from '@/contexts/ThemeContext';
+import { navLinks } from '@/data/ui/navigation';
 import { motion } from 'framer-motion';
-import { Bell, Gamepad2, Menu, Search, User, X } from 'lucide-react';
+import { Bell, Gamepad2, Menu, Moon, Search, Sun, User, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import MobileMenu from './MobileMenu';
+import NavigationLink from './NavigationLink';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [activeLink, setActiveLink] = useState('home');
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,13 +23,6 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const navLinks = [
-    { name: 'Игры', path: '/games', id: 'games' },
-    { name: 'Новости', path: '/news', id: 'news' },
-    { name: 'Гайды', path: '/guides', id: 'guides' },
-    { name: 'Чаты', path: '/social', id: 'social' },
-  ];
 
   return (
     <motion.header
@@ -54,65 +51,9 @@ export default function Header() {
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
-            <motion.div className="relative" whileHover={{ scale: 1.05 }}>
-              <input
-                type="text"
-                placeholder="Поиск игр, гайдов, новостей..."
-                className="bg-gray-700/70 rounded-lg py-2 px-4 pl-10 w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 focus:w-80"
-              />
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-            </motion.div>
-
-            <nav className="flex items-center space-x-6">
-              {navLinks.map(link => (
-                <Link href={link.path} key={link.id}>
-                  <motion.div
-                    className={`${
-                      activeLink === link.id
-                        ? 'text-indigo-400'
-                        : 'text-gray-300 hover:text-indigo-400'
-                    } relative transition-colors duration-300`}
-                    onClick={() => setActiveLink(link.id)}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ y: 0 }}
-                  >
-                    {link.name}
-                    {activeLink === link.id && (
-                      <motion.span
-                        className="absolute bottom-[-4px] left-0 h-[2px] bg-indigo-500 rounded-full w-full"
-                        layoutId="underline"
-                      />
-                    )}
-                  </motion.div>
-                </Link>
-              ))}
-            </nav>
-
-            <div className="flex items-center space-x-4">
-              <motion.button
-                className="text-gray-300 hover:text-white transition-all duration-300 relative"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Bell className="h-5 w-5" />
-                <motion.span
-                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs flex items-center justify-center"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                >
-                  3
-                </motion.span>
-              </motion.button>
-
-              <motion.div
-                className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center cursor-pointer"
-                whileHover={{ scale: 1.1, boxShadow: '0 0 8px rgba(99, 102, 241, 0.6)' }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <User className="h-5 w-5" />
-              </motion.div>
-            </div>
+            <SearchInput />
+            <Navigation activeLink={activeLink} setActiveLink={setActiveLink} />
+            <UserControls toggleTheme={toggleTheme} theme={theme} />
           </div>
 
           <motion.button
@@ -125,7 +66,6 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Используем компонент MobileMenu */}
       <MobileMenu
         isOpen={isMobileMenuOpen}
         setIsOpen={setIsMobileMenuOpen}
@@ -133,5 +73,84 @@ export default function Header() {
         setActiveLink={setActiveLink}
       />
     </motion.header>
+  );
+}
+
+function SearchInput() {
+  return (
+    <motion.div className="relative" whileHover={{ scale: 1.05 }}>
+      <input
+        type="text"
+        placeholder="Поиск игр, гайдов, новостей..."
+        className="bg-gray-700/70 rounded-lg py-2 px-4 pl-10 w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 focus:w-80"
+      />
+      <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+    </motion.div>
+  );
+}
+
+interface NavigationProps {
+  activeLink: string;
+  setActiveLink: (id: string) => void;
+}
+
+function Navigation({ activeLink, setActiveLink }: NavigationProps) {
+  return (
+    <nav className="flex items-center space-x-6">
+      {navLinks.map(link => (
+        <NavigationLink
+          key={link.id}
+          href={link.path}
+          isActive={activeLink === link.id}
+          onClick={() => setActiveLink(link.id)}
+        >
+          {link.name}
+        </NavigationLink>
+      ))}
+    </nav>
+  );
+}
+
+interface UserControlsProps {
+  toggleTheme: () => void;
+  theme: 'dark' | 'light';
+}
+
+function UserControls({ toggleTheme, theme }: UserControlsProps) {
+  return (
+    <div className="flex items-center space-x-4">
+      <motion.button
+        className="text-gray-300 hover:text-white transition-all duration-300"
+        onClick={toggleTheme}
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </motion.button>
+
+      <motion.button
+        className="text-gray-300 hover:text-white transition-all duration-300 relative"
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <Bell className="h-5 w-5" />
+        <motion.span
+          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs flex items-center justify-center"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+        >
+          3
+        </motion.span>
+      </motion.button>
+
+      <motion.div
+        className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center cursor-pointer"
+        whileHover={{ scale: 1.1, boxShadow: '0 0 8px rgba(99, 102, 241, 0.6)' }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <User className="h-5 w-5" />
+      </motion.div>
+    </div>
   );
 }

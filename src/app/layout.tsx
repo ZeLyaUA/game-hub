@@ -1,5 +1,6 @@
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -17,9 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body className={`${inter.className} min-h-screen`} data-theme="dark">
-        <Header />
-        <main className="bg-gray-900 text-white">{children}</main>
-        <Footer />
+        <ThemeProvider defaultTheme="dark">
+          <Header />
+          <main className="bg-gray-900 text-white">{children}</main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
