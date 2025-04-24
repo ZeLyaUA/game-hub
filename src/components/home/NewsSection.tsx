@@ -1,20 +1,13 @@
 'use client';
 
-import NewsItem from '@/components/news/NewsItem';
 import { Section } from '@/components/ui/Section';
 import { useNews } from '@/hooks/useData';
-import useIntersection from '@/hooks/useIntersection';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewsSection() {
-  const [ref, inView] = useIntersection({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const { news, isLoading } = useNews();
+  const { isLoading } = useNews();
 
   if (isLoading) {
     return (
@@ -48,25 +41,9 @@ export default function NewsSection() {
         </Link>
       </motion.div>
 
-      <motion.div
-        ref={ref}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        initial="hidden"
-        animate={inView ? 'visible' : 'hidden'}
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.2,
-            },
-          },
-        }}
-      >
-        {news.map((article, index) => (
-          <NewsItem key={article.id} article={article} index={index} />
-        ))}
-      </motion.div>
+      <div className="min-h-[300px] flex justify-center items-center">
+        <p className="text-gray-400">Раздел находится в разработке</p>
+      </div>
     </Section>
   );
 }

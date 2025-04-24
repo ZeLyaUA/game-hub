@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Gamepad2, Shield, Star } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { formatNumber } from '@/utils/format';
 import Image from 'next/image';
 
 const games = [
@@ -14,7 +13,6 @@ const games = [
     banner: '/banner/1200x600/banner-odin.png',
     logo: '/odin-logo.webp',
     description: 'Погрузитесь в скандинавский мир MMORPG с открытым миром и потрясающей графикой',
-    onlineCount: 25438,
     tags: ['MMORPG', 'Викинги', 'Открытый мир'],
     highlight: 'Новое обновление: Огненные земли',
   },
@@ -24,7 +22,6 @@ const games = [
     banner: '/banner/1200x600/banner-tl.jpg',
     logo: '/throneandliberty-logo.png',
     description: 'Фэнтезийная MMORPG с акцентом на трансформацию персонажей и динамичные бои',
-    onlineCount: 17863,
     tags: ['MMORPG', 'Фэнтези', 'PvP'],
     highlight: 'Скоро ЗБТ 2.0',
   },
@@ -34,7 +31,6 @@ const games = [
     banner: '/banner/1200x600/banner-lostark.jpg',
     logo: '/lostark-logo.png',
     description: 'Изометрическая MMORPG с быстрыми боями и множеством классов',
-    onlineCount: 32105,
     tags: ['MMORPG', 'Изометрия', 'Рейды'],
     highlight: 'Новый класс доступен',
   },
@@ -104,7 +100,7 @@ export default function HeroSection() {
   // Экран загрузки
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center relative">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -230,27 +226,16 @@ export default function HeroSection() {
                     sizes="64px" // Добавлено для оптимизации
                   />
                 </motion.div>
-                <div>
-                  <div className="text-sm font-medium text-indigo-400 mb-1 flex items-center">
-                    <span className="inline-block h-2 w-2 rounded-full bg-green-500 animate-pulse mr-2"></span>
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {formatNumber(games[activeGameIndex].onlineCount)} игроков онлайн
-                    </motion.span>
-                  </div>
-                  <motion.h1
-                    className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
-                    key={games[activeGameIndex].title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    {games[activeGameIndex].title}
-                  </motion.h1>
-                </div>
+
+                <motion.h1
+                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
+                  key={games[activeGameIndex].title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  {games[activeGameIndex].title}
+                </motion.h1>
               </motion.div>
 
               <motion.p
@@ -283,16 +268,6 @@ export default function HeroSection() {
                 variants={itemVariants}
               >
                 <motion.button
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center group relative overflow-hidden cursor-pointer"
-                  whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.4)' }}
-                  whileTap={{ y: 0, boxShadow: '0 0 0 0 rgba(99, 102, 241, 0)' }}
-                >
-                  <span className="absolute w-0 h-0 transition-all duration-300 ease-out bg-white rounded-full group-hover:w-32 group-hover:h-32 opacity-10"></span>
-                  <Gamepad2 className="h-5 w-5 mr-2" />
-                  <span>Играть сейчас</span>
-                </motion.button>
-
-                <motion.button
                   className="bg-gray-700/70 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center cursor-pointer"
                   whileHover={{ y: -5 }}
                   whileTap={{ y: 0 }}
@@ -310,7 +285,7 @@ export default function HeroSection() {
 
               {/* Бейдж ZeЛяве Братство */}
               <div className="absolute top-0 right-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-1 rounded-bl-lg font-medium text-sm z-10">
-                Эксклюзив ZeЛяве
+                Discord ZeЛяве
               </div>
 
               <div className="pt-6 relative z-10">

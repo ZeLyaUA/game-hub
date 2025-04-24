@@ -13,7 +13,7 @@ export interface Game {
 export const games: Game[] = [
   {
     id: 1,
-    title: 'ODIN: Valhalla Rising',
+    title: 'ODIN Valhalla Rising',
     banner: '/banner/1200x600/banner-odin.png',
     logo: '/odin-logo.webp',
     description: 'Погрузитесь в скандинавский мир MMORPG с открытым миром и потрясающей графикой',

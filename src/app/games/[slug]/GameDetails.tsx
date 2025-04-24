@@ -3,9 +3,8 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Game } from '@/data/games/games-list';
-import { formatNumber } from '@/utils/format';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Star, Users } from 'lucide-react';
+import { ChevronLeft, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -54,16 +53,11 @@ export default function GameDetails({ game }: GameDetailsProps) {
               sizes="64px"
             />
           </div>
-          <div>
-            <div className="flex items-center mb-2">
-              <div className="flex items-center bg-black/50 rounded-full px-3 py-1 text-xs mr-2">
-                <Users className="h-3 w-3 text-indigo-400 mr-1" />
-                <span>{formatNumber(game.onlineCount)} онлайн</span>
-              </div>
-              <div className="flex items-center bg-black/50 rounded-full px-3 py-1 text-xs">
-                <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                <span>{game.rating}</span>
-              </div>
+
+          <div className="flex items-center mb-2">
+            <div className="flex items-center bg-black/50 rounded-full px-3 py-1 text-xs">
+              <Star className="h-3 w-3 text-yellow-500 mr-1" />
+              <span>{game.rating}</span>
             </div>
           </div>
         </div>

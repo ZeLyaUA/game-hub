@@ -1,22 +1,13 @@
 'use client';
 
-import GameCard from '@/components/games/GameCard';
 import { Section } from '@/components/ui/Section';
 import { useGames } from '@/hooks/useData';
-import useIntersection from '@/hooks/useIntersection';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
 
 export default function GamesList() {
-  const [hoveredGame, setHoveredGame] = useState<number | null>(null);
-  const [ref, inView] = useIntersection({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  const { games, isLoading } = useGames();
+  const { isLoading } = useGames();
 
   if (isLoading) {
     return (
@@ -48,31 +39,9 @@ export default function GamesList() {
         </Link>
       </motion.div>
 
-      <motion.div
-        ref={ref}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        initial="hidden"
-        animate={inView ? 'visible' : 'hidden'}
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.2,
-            },
-          },
-        }}
-      >
-        {games.map((game, index) => (
-          <GameCard
-            key={game.id}
-            game={game}
-            index={index}
-            isHovered={hoveredGame === game.id}
-            onHover={setHoveredGame}
-          />
-        ))}
-      </motion.div>
+      <div className="min-h-[300px] flex justify-center items-center">
+        <p className="text-gray-400">Раздел находится в разработке</p>
+      </div>
     </Section>
   );
 }

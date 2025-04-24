@@ -2,7 +2,6 @@
 
 import { Badge } from '@/components/ui/Badge';
 import { Game } from '@/data/games/games-list';
-import { formatNumber } from '@/utils/format';
 import { motion } from 'framer-motion';
 import { ChevronRight, Star } from 'lucide-react';
 import Image from 'next/image';
@@ -50,11 +49,6 @@ export default function GameCard({ game, index, isHovered, onHover }: GameCardPr
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </motion.div>
-        </div>
-
-        {/* Остальные элементы без overflow: hidden */}
-        <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1 text-xs">
-          {formatNumber(game.onlineCount)} онлайн
         </div>
 
         <div className="absolute -bottom-6 left-4">

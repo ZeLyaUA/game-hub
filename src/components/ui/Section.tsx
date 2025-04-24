@@ -6,6 +6,7 @@ import { ReactNode } from 'react';
 export interface SectionProps {
   children: ReactNode;
   className?: string;
+  ref?: React.ForwardedRef<HTMLElement>;
   id?: string;
   withContainer?: boolean;
   withBackground?: boolean;
@@ -15,6 +16,7 @@ export interface SectionProps {
 
 export function Section({
   children,
+  ref,
   className = '',
   id,
   withContainer = true,
@@ -39,6 +41,7 @@ export function Section({
   return (
     <section
       id={id}
+      ref={ref}
       className={`${baseStyles} ${variantStyles[variant]} ${backgroundStyles} ${gradientStyles} ${className}`}
     >
       {withBackground && (
@@ -84,7 +87,7 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   if (!withAnimation) {
     return (
-      <div className={`text-center mb-12 ${className}`}>
+      <div className={`text-center mb-12 relative ${className}`}>
         <h2
           className={`text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent ${titleClassName}`}
         >
@@ -101,7 +104,7 @@ export function SectionHeader({
 
   return (
     <motion.div
-      className={`text-center mb-12 ${className}`}
+      className={`text-center mb-12 relative ${className}`}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
