@@ -1,11 +1,13 @@
 'use client';
 
-import { Bell, Database, Globe, Palette, Save, Shield } from 'lucide-react';
+import { Bell, Database, Globe, Palette, Save, Shield, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 export default function SettingsDashboardPage() {
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<string | null>(null);
 
   const tabs = [
     { id: 'general', name: 'Основные', icon: Globe },
@@ -20,6 +22,30 @@ export default function SettingsDashboardPage() {
     // Имитация сохранения
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSaving(false);
+  };
+
+  const handleCleanup = async () => {
+    setIsCleaning(true);
+    setCleanupResult(null);
+
+    try {
+      const response = await fetch('/api/cleanup', {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCleanupResult(`Удалено файлов: ${data.deletedCount}`);
+      } else {
+        setCleanupResult('Ошибка при очистке файлов');
+      }
+    } catch (error) {
+      console.error(error);
+      setCleanupResult('Ошибка при очистке файлов');
+    } finally {
+      setIsCleaning(false);
+    }
   };
 
   return (
@@ -211,6 +237,34 @@ export default function SettingsDashboardPage() {
                 >
                   Очистить кэш
                 </button>
+              </div>
+
+              <div className="mt-8 border-t border-gray-700 pt-6">
+                <h3 className="text-white font-medium mb-4">Управление файлами</h3>
+                <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <p className="text-gray-300 mb-4">
+                    Удалить все неиспользуемые изображения из директории uploads
+                  </p>
+                  <button
+                    onClick={handleCleanup}
+                    disabled={isCleaning}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 
+                             text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
+                  >
+                    {isCleaning ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Очистка...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-5 h-5" />
+                        Очистить неиспользуемые файлы
+                      </>
+                    )}
+                  </button>
+                  {cleanupResult && <p className="mt-4 text-sm text-gray-400">{cleanupResult}</p>}
+                </div>
               </div>
             </div>
           )}

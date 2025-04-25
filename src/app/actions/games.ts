@@ -15,6 +15,18 @@ export async function getGames() {
   }
 }
 
+export async function getGameById(id: string) {
+  try {
+    const game = await prisma.game.findUnique({
+      where: { id },
+    });
+    return game;
+  } catch (error) {
+    console.error('Failed to fetch game:', error);
+    return null;
+  }
+}
+
 export async function addGame(formData: FormData) {
   const title = formData.get('title') as string;
   const image = formData.get('image') as string;
@@ -47,6 +59,44 @@ export async function addGame(formData: FormData) {
   } catch (error) {
     console.error('Failed to add game:', error);
     throw new Error('Failed to add game');
+  }
+}
+
+export async function updateGame(formData: FormData) {
+  const id = formData.get('id') as string;
+  const title = formData.get('title') as string;
+  const image = formData.get('image') as string;
+  const description = formData.get('description') as string;
+  const status = formData.get('status') as string;
+  const color = formData.get('color') as string;
+  const accent = formData.get('accent') as string;
+
+  if (!id || !title || !image) {
+    throw new Error('ID, title and image are required');
+  }
+
+  try {
+    const updatedGame = await prisma.game.update({
+      where: { id },
+      data: {
+        title,
+        image,
+        description,
+        status,
+        color,
+        accent,
+      },
+    });
+
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+    revalidatePath(`/game/${id}`);
+    revalidatePath(`/dashboard/games/${id}/edit`);
+
+    return { success: true, game: updatedGame };
+  } catch (error) {
+    console.error('Failed to update game:', error);
+    throw new Error('Failed to update game');
   }
 }
 

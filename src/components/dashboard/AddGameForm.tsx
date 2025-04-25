@@ -2,7 +2,7 @@
 
 import { addGame } from '@/app/actions/games';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, FileText, Image as ImageIcon, Tag, Upload } from 'lucide-react';
+import { AlertCircle, FileText, Image as ImageIcon, Tag, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 
 export function AddGameForm() {
@@ -10,6 +10,88 @@ export function AddGameForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Проверяем тип файла
+    if (!file.type.startsWith('image/')) {
+      setError('Пожалуйста, выберите изображение');
+      return;
+    }
+
+    // Проверяем размер файла (максимум 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Файл слишком большой. Максимальный размер: 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка при загрузке файла');
+      }
+
+      setPreviewImage(data.url);
+
+      // Устанавливаем значение в скрытый input
+      const imageInput = document.getElementById('image') as HTMLInputElement;
+      if (imageInput) {
+        imageInput.value = data.url;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка при загрузке файла');
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  async function handleRemoveImage() {
+    if (!previewImage) return;
+
+    try {
+      // Удаляем файл с сервера, если это загруженное изображение
+      if (previewImage.startsWith('/uploads/')) {
+        const response = await fetch('/api/upload/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ filePath: previewImage }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Ошибка при удалении файла');
+        }
+      }
+
+      setPreviewImage('');
+
+      // Очищаем скрытый input
+      const imageInput = document.getElementById('image') as HTMLInputElement;
+      if (imageInput) {
+        imageInput.value = '';
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Не удалось удалить изображение');
+    }
+  }
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
@@ -32,11 +114,6 @@ export function AddGameForm() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    setPreviewImage(value);
   }
 
   return (
@@ -62,37 +139,77 @@ export function AddGameForm() {
         />
       </div>
 
-      {/* Image URL */}
+      {/* Image Upload */}
       <div>
         <label
-          htmlFor="image"
+          htmlFor="imageFile"
           className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2"
         >
           <ImageIcon className="w-4 h-4" />
-          URL постера
+          Постер игры
         </label>
-        <div className="relative">
-          <input
-            type="text"
-            id="image"
-            name="image"
-            required
-            onChange={handleImageChange}
-            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg 
-                     focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 
-                     text-white placeholder-gray-500 transition-colors"
-            placeholder="/images/game-poster.jpg"
-          />
-          {previewImage && (
-            <div className="mt-2 relative w-full h-40 rounded-lg overflow-hidden border border-gray-700">
-              <img
-                src={previewImage}
-                alt="Preview"
-                className="w-full h-full object-cover"
-                onError={e => {
-                  (e.target as HTMLImageElement).src = '/api/placeholder/400/200';
-                }}
+        <div className="space-y-2">
+          <input type="hidden" id="image" name="image" value={previewImage} />
+
+          <div className="flex items-center justify-center w-full">
+            <label
+              htmlFor="imageFile"
+              className={`relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed 
+                       rounded-lg cursor-pointer transition-colors
+                       ${
+                         previewImage
+                           ? 'border-indigo-500 bg-gray-800/30'
+                           : 'border-gray-700 bg-gray-800/50 hover:bg-gray-800/70'
+                       }
+                       ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {previewImage ? (
+                <>
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  {!isUploading && (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleRemoveImage();
+                      }}
+                      className="absolute top-2 right-2 p-1 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-10 h-10 mb-3 text-gray-400" />
+                  <p className="mb-2 text-sm text-gray-400">
+                    <span className="font-semibold">Нажмите для загрузки</span> или перетащите файл
+                  </p>
+                  <p className="text-xs text-gray-500">PNG, JPG, WEBP до 5MB</p>
+                </div>
+              )}
+              <input
+                id="imageFile"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={isUploading}
               />
+            </label>
+          </div>
+
+          {isUploading && (
+            <div className="text-center mt-2">
+              <div className="inline-flex items-center gap-2 text-sm text-indigo-400">
+                <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                Загрузка и оптимизация...
+              </div>
             </div>
           )}
         </div>
@@ -169,7 +286,7 @@ export function AddGameForm() {
       {/* Submit button */}
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoading || isUploading}
         className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-indigo-500 
                  hover:from-indigo-500 hover:to-indigo-400 text-white rounded-lg font-medium 
                  transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed

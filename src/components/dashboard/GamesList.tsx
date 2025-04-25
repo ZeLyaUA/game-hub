@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils/date';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle, Clock, Edit2, ExternalLink, Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 
 interface Game {
@@ -99,7 +100,7 @@ export function GamesList({ games }: GamesListProps) {
             >
               <div className="flex flex-col sm:flex-row">
                 {/* Image */}
-                <div className="relative w-full sm:w-48 h-48 sm:h-32">
+                <Link href={`/game/${game.id}`} className="relative w-full sm:w-48 h-48 sm:h-32">
                   <Image
                     src={game.image}
                     alt={game.title}
@@ -108,13 +109,17 @@ export function GamesList({ games }: GamesListProps) {
                     sizes="(max-width: 640px) 100vw, 192px"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-transparent sm:hidden" />
-                </div>
+                </Link>
 
                 {/* Content */}
                 <div className="flex-1 p-4 sm:p-6">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-1">{game.title}</h3>
+                      <Link href={`/game/${game.id}`} className="group">
+                        <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-indigo-400 transition-colors">
+                          {game.title}
+                        </h3>
+                      </Link>
                       <p className="text-sm text-gray-400 line-clamp-2">
                         {game.description || 'Нет описания'}
                       </p>
@@ -146,21 +151,23 @@ export function GamesList({ games }: GamesListProps) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                      <button
+                      <Link
+                        href={`/game/${game.id}`}
                         className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 
                                  rounded-lg transition-colors"
                         title="Открыть"
                       >
                         <ExternalLink className="w-5 h-5" />
-                      </button>
+                      </Link>
 
-                      <button
+                      <Link
+                        href={`/dashboard/games/${game.id}/edit`}
                         className="p-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 
                                  rounded-lg transition-colors"
                         title="Редактировать"
                       >
                         <Edit2 className="w-5 h-5" />
-                      </button>
+                      </Link>
 
                       <button
                         onClick={() => handleDelete(game.id)}

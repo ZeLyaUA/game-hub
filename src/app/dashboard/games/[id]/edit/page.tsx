@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { deleteGame, getGameById, updateGame } from '@/app/actions/games';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertCircle,
   ArrowLeft,
@@ -9,9 +10,11 @@ import {
   Save,
   Tag,
   Trash2,
+  Upload,
+  X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 interface GameData {
   id: string;
@@ -23,22 +26,133 @@ interface GameData {
   accent: string;
 }
 
-export default function EditGamePage({ params }: { params: { id: string } }) {
+export default function EditGamePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const resolvedParams = use(params);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string>('');
+  const [originalImage, setOriginalImage] = useState<string>('');
 
-  // В реальном приложении здесь был бы запрос к API
   const [gameData, setGameData] = useState<GameData>({
-    id: params.id,
-    title: 'Odin: Valhalla Rising',
-    image: '/odin-800x1200.jpg',
-    description: 'Масштабная MMORPG с открытым миром и эпическими сражениями',
+    id: resolvedParams.id,
+    title: '',
+    image: '',
+    description: '',
     status: 'active',
-    color: 'from-blue-800/80 to-indigo-600/80',
-    accent: 'blue-500',
+    color: 'from-indigo-800/80 to-purple-600/80',
+    accent: 'indigo-500',
   });
+
+  // Загружаем данные об игре
+  useEffect(() => {
+    async function loadGame() {
+      try {
+        const game = await getGameById(resolvedParams.id);
+        if (game) {
+          setGameData({
+            id: game.id,
+            title: game.title,
+            image: game.image,
+            description: game.description || '',
+            status: game.status,
+            color: game.color,
+            accent: game.accent,
+          });
+          setPreviewImage(game.image);
+          setOriginalImage(game.image); // Сохраняем оригинальное изображение
+        } else {
+          setError('Игра не найдена');
+        }
+      } catch (err) {
+        console.error(err);
+        setError('Ошибка при загрузке данных');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadGame();
+  }, [resolvedParams.id]);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Проверяем тип файла
+    if (!file.type.startsWith('image/')) {
+      setError('Пожалуйста, выберите изображение');
+      return;
+    }
+
+    // Проверяем размер файла (максимум 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Файл слишком большой. Максимальный размер: 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Отправляем текущий путь изображения для удаления
+      if (gameData.image && gameData.image.startsWith('/uploads/')) {
+        formData.append('oldImagePath', gameData.image);
+      }
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка при загрузке файла');
+      }
+
+      setPreviewImage(data.url);
+      setGameData(prev => ({ ...prev, image: data.url }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка при загрузке файла');
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  async function handleRemoveImage() {
+    if (!previewImage) return;
+
+    try {
+      // Удаляем файл с сервера, если это загруженное изображение
+      if (previewImage.startsWith('/uploads/')) {
+        const response = await fetch('/api/upload/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ filePath: previewImage }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Ошибка при удалении файла');
+        }
+      }
+
+      setPreviewImage('');
+      setGameData(prev => ({ ...prev, image: '' }));
+    } catch (err) {
+      console.error(err);
+      setError('Не удалось удалить изображение');
+    }
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,9 +160,18 @@ export default function EditGamePage({ params }: { params: { id: string } }) {
     setError(null);
 
     try {
-      // Здесь должен быть вызов API для сохранения
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const formData = new FormData();
+      formData.append('id', gameData.id);
+      formData.append('title', gameData.title);
+      formData.append('image', gameData.image);
+      formData.append('description', gameData.description);
+      formData.append('status', gameData.status);
+      formData.append('color', gameData.color);
+      formData.append('accent', gameData.accent);
+
+      await updateGame(formData);
       setSuccess(true);
+      setOriginalImage(gameData.image); // Обновляем оригинальное изображение
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       console.error(err);
@@ -62,14 +185,32 @@ export default function EditGamePage({ params }: { params: { id: string } }) {
     if (!confirm('Вы уверены, что хотите удалить эту игру?')) return;
 
     try {
-      // Здесь должен быть вызов API для удаления
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Удаляем изображение, если оно загружено
+      if (gameData.image && gameData.image.startsWith('/uploads/')) {
+        await fetch('/api/upload/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ filePath: gameData.image }),
+        });
+      }
+
+      await deleteGame(gameData.id);
       router.push('/dashboard/games');
     } catch (err) {
       console.error(err);
       setError('Не удалось удалить игру');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -117,30 +258,75 @@ export default function EditGamePage({ params }: { params: { id: string } }) {
               />
             </div>
 
-            {/* Image */}
+            {/* Image Upload */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                 <ImageIcon className="w-4 h-4" />
-                URL постера
+                Постер игры
               </label>
               <div className="space-y-4">
-                <input
-                  type="text"
-                  value={gameData.image}
-                  onChange={e => setGameData({ ...gameData, image: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg 
-                           text-white focus:outline-none focus:border-indigo-500"
-                />
-                <div className="relative w-full h-64 rounded-lg overflow-hidden border border-gray-700">
-                  <img
-                    src={gameData.image || '/api/placeholder/400/200'}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                    onError={e => {
-                      (e.target as HTMLImageElement).src = '/api/placeholder/400/200';
-                    }}
-                  />
+                <div className="flex items-center justify-center w-full">
+                  <label
+                    htmlFor="imageFile"
+                    className={`relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed 
+                             rounded-lg cursor-pointer transition-colors
+                             ${
+                               previewImage
+                                 ? 'border-indigo-500 bg-gray-800/30'
+                                 : 'border-gray-700 bg-gray-800/50 hover:bg-gray-800/70'
+                             }
+                             ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {previewImage ? (
+                      <>
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                        {!isUploading && (
+                          <button
+                            type="button"
+                            onClick={e => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleRemoveImage();
+                            }}
+                            className="absolute top-2 right-2 p-1 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-10 h-10 mb-3 text-gray-400" />
+                        <p className="mb-2 text-sm text-gray-400">
+                          <span className="font-semibold">Нажмите для загрузки</span> или перетащите
+                          файл
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG, WEBP до 5MB</p>
+                      </div>
+                    )}
+                    <input
+                      id="imageFile"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                    />
+                  </label>
                 </div>
+
+                {isUploading && (
+                  <div className="text-center">
+                    <div className="inline-flex items-center gap-2 text-sm text-indigo-400">
+                      <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                      Загрузка и оптимизация...
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -215,25 +401,29 @@ export default function EditGamePage({ params }: { params: { id: string } }) {
           </div>
 
           {/* Messages */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"
-            >
-              {error}
-            </motion.div>
-          )}
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"
+              >
+                {error}
+              </motion.div>
+            )}
 
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm"
-            >
-              Изменения сохранены!
-            </motion.div>
-          )}
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm"
+              >
+                Изменения сохранены!
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Actions */}
           <div className="mt-8 flex justify-end gap-4">
@@ -248,7 +438,7 @@ export default function EditGamePage({ params }: { params: { id: string } }) {
 
             <button
               type="submit"
-              disabled={isSaving}
+              disabled={isSaving || isUploading}
               className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 
                        text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
             >
@@ -267,29 +457,6 @@ export default function EditGamePage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </form>
-
-      {/* Additional Information */}
-      <div className="mt-8 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Дополнительная информация</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <p className="text-sm text-gray-400">ID игры</p>
-            <p className="text-white font-mono">{gameData.id}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Дата добавления</p>
-            <p className="text-white">25 января 2025</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Последнее обновление</p>
-            <p className="text-white">25 апреля 2025</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-400">Версия</p>
-            <p className="text-white">1.0.0</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
