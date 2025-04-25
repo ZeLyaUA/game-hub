@@ -1,10 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { LayoutDashboard } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { Logo } from './Logo';
 
-export function Navbar() {
+interface NavbarProps {
+  showDashboard?: boolean;
+}
+
+export function Navbar({ showDashboard = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -46,6 +52,15 @@ export function Navbar() {
           <button className="text-gray-400 hover:text-white transition-colors duration-300">
             Сообщество
           </button>
+          {showDashboard && (
+            <Link
+              href="/dashboard"
+              className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center gap-2"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Панель управления
+            </Link>
+          )}
           <button className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity duration-300">
             Войти
           </button>
@@ -66,6 +81,15 @@ export function Navbar() {
               <button className="text-gray-400 hover:text-white transition-colors duration-300 text-left py-2">
                 Сообщество
               </button>
+              {showDashboard && (
+                <Link
+                  href="/dashboard"
+                  className="text-gray-400 hover:text-white transition-colors duration-300 text-left py-2 flex items-center gap-2"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Панель управления
+                </Link>
+              )}
               <button className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity duration-300 w-full">
                 Войти
               </button>
