@@ -12,7 +12,7 @@ interface Game {
   title: string;
   status: string;
   image: string;
-  description: string;
+  description: string | null; // Изменено с string на string | null
   color: string;
   accent: string;
   icon: React.ReactNode;

@@ -10,7 +10,7 @@ interface GameCardProps {
     title: string;
     status: string;
     image: string;
-    description: string;
+    description: string | null; // Изменено с string на string | null
     color: string;
     accent: string;
     icon: React.ReactNode;
@@ -92,7 +92,7 @@ export function GameCard({ game, index, activeGame, onMouseEnter, onMouseLeave }
               )}
 
               <h3 className="text-2xl font-bold text-white mb-2">{game.title}</h3>
-              <p className="text-gray-200 text-sm mb-4 opacity-90">{game.description}</p>
+              <p className="text-gray-200 text-sm mb-4 opacity-90">{game.description || ''}</p>
 
               {game.status === 'active' && (
                 <motion.button

@@ -9,7 +9,7 @@ interface Game {
   id: string;
   title: string;
   image: string;
-  description?: string;
+  description: string | null; // Изменено с string? на string | null
   status: string;
 }
 
