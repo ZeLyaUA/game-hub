@@ -1,5 +1,6 @@
 'use client';
 
+// src/presentation/components/effects/BackgroundAnimation.tsx
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 

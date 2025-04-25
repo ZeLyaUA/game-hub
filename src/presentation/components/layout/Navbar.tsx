@@ -1,10 +1,11 @@
 'use client';
 
+// src/presentation/components/layout/Navbar.tsx
 import { motion } from 'framer-motion';
 import { LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Logo } from './Logo';
+import { Logo } from '../common/Logo';
 
 interface NavbarProps {
   showDashboard?: boolean;

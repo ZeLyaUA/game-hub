@@ -1,4 +1,6 @@
 // src/presentation/components/dashboard/NotificationsDashboard.tsx
+'use client';
+
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, Bell, CheckCheck, CheckCircle, Info, X } from 'lucide-react';
 import { useState } from 'react';

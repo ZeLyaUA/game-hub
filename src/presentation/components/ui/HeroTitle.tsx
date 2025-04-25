@@ -1,5 +1,6 @@
 'use client';
 
+// src/presentation/components/ui/HeroTitle.tsx
 import { motion } from 'framer-motion';
 
 export function HeroTitle() {

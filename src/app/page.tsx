@@ -1,31 +1,15 @@
 // src/app/page.tsx
-import { getGames } from '@/app/actions/games';
-import { GameWithIcon } from '@/types/game';
-import { Clock, Gamepad2, Swords } from 'lucide-react';
+import { IGameService } from '@/domain/services/game.service';
+import { getServerContainer } from '@/infrastructure/di/getServerContainer';
 import HomeClient from './HomeClient';
 
 export const dynamic = 'force-dynamic';
 
-// Маппинг иконок для игр
-const gameIcons: Record<string, React.ReactNode> = {
-  odin: <Swords className="w-6 h-6" />,
-  chrono: <Clock className="w-6 h-6" />,
-  archeage: <Gamepad2 className="w-6 h-6" />,
-  default: <Gamepad2 className="w-6 h-6" />,
-};
-
-function getGameIcon(gameId: string): React.ReactNode {
-  return gameIcons[gameId] ?? gameIcons.default;
-}
-
 export default async function HomePage() {
-  const games = await getGames();
+  const container = getServerContainer();
+  const gameService = container.resolve<IGameService>('GameService');
 
-  // Добавляем иконки к играм
-  const gamesWithIcons: GameWithIcon[] = games.map(game => ({
-    ...game,
-    icon: getGameIcon(game.id),
-  }));
+  const { games } = await gameService.getGames();
 
-  return <HomeClient games={gamesWithIcons} />;
+  return <HomeClient games={games} />;
 }

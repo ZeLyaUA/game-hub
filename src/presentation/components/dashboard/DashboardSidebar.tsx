@@ -1,4 +1,6 @@
 // src/presentation/components/dashboard/DashboardSidebar.tsx
+'use client';
+
 import { Logo } from '@/presentation/components/common/Logo';
 import {
   BarChart3,

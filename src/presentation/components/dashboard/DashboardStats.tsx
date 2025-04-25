@@ -1,29 +1,14 @@
-'use client';
-
+// src/presentation/components/dashboard/DashboardStats.tsx
 import { motion } from 'framer-motion';
 import { Clock, Gamepad2, TrendingUp, Users } from 'lucide-react';
 
-interface Game {
-  id: string;
-  title: string;
-  status: string;
-  image: string;
-  description: string | null;
-  color: string;
-  accent: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 interface DashboardStatsProps {
-  games: Game[];
+  totalGames: number;
+  activeGames: number;
+  comingGames: number;
 }
 
-export function DashboardStats({ games }: DashboardStatsProps) {
-  const activeGames = games.filter(game => game.status === 'active').length;
-  const comingGames = games.filter(game => game.status === 'coming').length;
-  const totalGames = games.length;
-
+export function DashboardStats({ totalGames, activeGames, comingGames }: DashboardStatsProps) {
   const stats = [
     {
       name: 'Всего игр',

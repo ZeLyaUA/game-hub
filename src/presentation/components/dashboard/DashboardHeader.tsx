@@ -1,4 +1,6 @@
 // src/presentation/components/dashboard/DashboardHeader.tsx
+'use client';
+
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { NotificationsDashboard } from './NotificationsDashboard';

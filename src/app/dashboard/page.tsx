@@ -1,12 +1,15 @@
-// src/app/dashboard/page.tsx
 'use client';
 
+// src/app/dashboard/page.tsx
 import { QuickActions, RecentActivity, SystemStatus } from '@/presentation/components/dashboard';
 import { GameStats } from '@/presentation/components/games';
 import { Card, LoadingSpinner } from '@/presentation/components/ui';
 import { useGameContext } from '@/presentation/contexts/GameContext';
 import { useGameStats } from '@/presentation/hooks/useGameStats';
+import { Gamepad2 } from 'lucide-react';
 import { useEffect } from 'react';
+
+import Image from 'next/image';
 
 export default function DashboardPage() {
   const { games, fetchGames } = useGameContext();
@@ -45,11 +48,19 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {games.slice(0, 5).map(game => (
                 <div key={game.id} className="flex items-center gap-4">
-                  <img
-                    src={game.image}
-                    alt={game.title}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
+                  {game.image ? (
+                    <Image
+                      src={game.image}
+                      alt={game.title}
+                      className="w-16 h-16 rounded-lg object-cover"
+                      width={160}
+                      height={160}
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                      <Gamepad2 className="w-8 h-8 text-gray-600" />
+                    </div>
+                  )}
                   <div>
                     <h3 className="text-white font-medium">{game.title}</h3>
                     <p className="text-sm text-gray-400">

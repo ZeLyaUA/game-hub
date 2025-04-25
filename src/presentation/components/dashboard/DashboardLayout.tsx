@@ -1,7 +1,6 @@
-'use client';
-
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+// src/presentation/components/dashboard/DashboardLayout.tsx
+import { DashboardHeader } from './DashboardHeader';
+import { DashboardSidebar } from './DashboardSidebar';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (

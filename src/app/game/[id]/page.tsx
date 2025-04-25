@@ -1,6 +1,6 @@
 // src/app/game/[id]/page.tsx
 import { getGameById } from '@/app/actions/games';
-import { Navbar } from '@/components/Navbar';
+
 import { ArrowLeft, Calendar, GamepadIcon, Info } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -16,8 +16,6 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <Navbar />
-
       {/* Hero Section */}
       <div className="relative h-[60vh] w-full">
         <Image src={game.image} alt={game.title} fill className="object-cover" priority />
