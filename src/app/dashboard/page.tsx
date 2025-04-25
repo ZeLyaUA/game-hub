@@ -1,48 +1,30 @@
-import { getGames } from '@/app/actions/games';
-import { AddGameForm } from '@/components/dashboard/AddGameForm';
-import { DashboardStats } from '@/components/dashboard/DashboardStats';
-import { GamesList } from '@/components/dashboard/GamesList';
-import { QuickActionsDashboard } from '@/components/dashboard/QuickActionsDashboard';
-import { RecentActivityDashboard } from '@/components/dashboard/RecentActivityDashboard';
-import { SystemStatusDashboard } from '@/components/dashboard/SystemStatusDashboard';
-import { Suspense } from 'react';
+// src/app/dashboard/page.tsx
+'use client';
 
-export const dynamic = 'force-dynamic';
-
-async function GamesData() {
-  const games = await getGames();
-
-  return (
-    <>
-      <DashboardStats games={games} />
-
-      <QuickActionsDashboard />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-        {/* Games list */}
-        <div className="lg:col-span-2">
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-            <GamesList games={games} />
-          </div>
-        </div>
-
-        {/* Add game form */}
-        <div className="lg:col-span-1">
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 sticky top-8">
-            <h2 className="text-xl font-semibold text-white mb-6">Добавить игру</h2>
-            <AddGameForm />
-          </div>
-        </div>
-      </div>
-
-      <RecentActivityDashboard />
-
-      <SystemStatusDashboard />
-    </>
-  );
-}
+import { QuickActions, RecentActivity, SystemStatus } from '@/presentation/components/dashboard';
+import { GameStats } from '@/presentation/components/games';
+import { Card, LoadingSpinner } from '@/presentation/components/ui';
+import { useGameContext } from '@/presentation/contexts/GameContext';
+import { useGameStats } from '@/presentation/hooks/useGameStats';
+import { useEffect } from 'react';
 
 export default function DashboardPage() {
+  const { games, fetchGames } = useGameContext();
+  const { stats, fetchStats, isLoading: isLoadingStats } = useGameStats();
+
+  useEffect(() => {
+    fetchGames();
+    fetchStats();
+  }, [fetchGames, fetchStats]);
+
+  if (isLoadingStats) {
+    return (
+      <div className="flex justify-center py-12">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-8">
@@ -50,15 +32,51 @@ export default function DashboardPage() {
         <p className="text-gray-400 mt-1">Общий обзор системы</p>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-          </div>
-        }
-      >
-        <GamesData />
-      </Suspense>
+      <GameStats {...stats} />
+
+      <div className="mt-8">
+        <QuickActions />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="lg:col-span-2">
+          <Card>
+            <h2 className="text-xl font-semibold text-white mb-6">Последние игры</h2>
+            <div className="space-y-4">
+              {games.slice(0, 5).map(game => (
+                <div key={game.id} className="flex items-center gap-4">
+                  <img
+                    src={game.image}
+                    alt={game.title}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                  <div>
+                    <h3 className="text-white font-medium">{game.title}</h3>
+                    <p className="text-sm text-gray-400">
+                      {game.status === 'active' ? 'Активна' : 'Скоро'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-1">
+          <Card>
+            <h2 className="text-xl font-semibold text-white mb-6">Быстрые действия</h2>
+            <QuickActions compact />
+          </Card>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <RecentActivity />
+      </div>
+
+      <div className="mt-8">
+        <SystemStatus />
+      </div>
     </div>
   );
 }

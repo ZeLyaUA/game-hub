@@ -1,29 +1,17 @@
 // src/app/api/cleanup/route.ts
-import { cleanupUnusedImages } from '@/lib/utils/cleanupImages';
-import { ApiError, CleanupResponse } from '@/types/game';
+import { IImageService } from '@/domain/services/image.service';
+import { getServerContainer } from '@/infrastructure/di/getServerContainer';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
   try {
-    const result = await cleanupUnusedImages();
+    const container = getServerContainer();
+    const imageService = container.resolve<IImageService>('ImageService');
 
-    if (!result.success && result.error) {
-      const error: ApiError = {
-        error: result.error.message || 'Ошибка при очистке файлов',
-        status: 500,
-      };
-      return NextResponse.json(error, { status: 500 });
-    }
-
-    const response: CleanupResponse = {
-      success: result.success,
-      deletedCount: result.deletedCount,
-    };
-
-    return NextResponse.json(response);
+    const result = await imageService.cleanup();
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Cleanup error:', error);
-    const apiError: ApiError = { error: 'Ошибка при очистке файлов', status: 500 };
-    return NextResponse.json(apiError, { status: 500 });
+    return NextResponse.json({ error: 'Ошибка при очистке файлов' }, { status: 500 });
   }
 }

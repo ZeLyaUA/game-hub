@@ -1,5 +1,7 @@
+// src/app/layout.tsx
 import { Inter, Orbitron, Rajdhani } from 'next/font/google';
 import './globals.css';
+import { Providers } from './providers';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 const orbitron = Orbitron({
@@ -30,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.className} ${orbitron.variable} ${rajdhani.variable} min-h-screen`}
         data-theme="dark"
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

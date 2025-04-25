@@ -1,33 +1,81 @@
-import { getGames } from '@/app/actions/games';
-import { AddGameForm } from '@/components/dashboard/AddGameForm';
-import { GamesList } from '@/components/dashboard/GamesList';
-import { Game } from '@/generated/prisma';
+// src/app/dashboard/games/page.tsx
+'use client';
+
+import { GameEntity } from '@/domain/entities/game';
+import { GameForm, GameList, GameStats } from '@/presentation/components/games';
+import { Button, Modal } from '@/presentation/components/ui';
+import { useToast } from '@/presentation/components/ui/Toast';
+import { useGameContext } from '@/presentation/contexts/GameContext';
 import { Plus } from 'lucide-react';
-import { Suspense } from 'react';
+import { useEffect, useState } from 'react';
 
-export const dynamic = 'force-dynamic';
+export default function GamesPage() {
+  const { games, isLoading, error, fetchGames, createGame, updateGame, deleteGame } =
+    useGameContext();
 
-function GamesContent({ games }: { games: Game[] }) {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2">
-        <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-          <GamesList games={games} />
-        </div>
-      </div>
+  const { showToast } = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<GameEntity | null>(null);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    coming: 0,
+    archived: 0,
+  });
 
-      <div className="lg:col-span-1">
-        <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 sticky top-8">
-          <h2 className="text-xl font-semibold text-white mb-6">Быстрое добавление</h2>
-          <AddGameForm />
-        </div>
-      </div>
-    </div>
-  );
-}
+  useEffect(() => {
+    fetchGames();
+  }, [fetchGames]);
 
-export default async function GamesDashboardPage() {
-  const games = await getGames();
+  useEffect(() => {
+    // Calculate stats
+    setStats({
+      total: games.length,
+      active: games.filter(g => g.status === 'active').length,
+      coming: games.filter(g => g.status === 'coming').length,
+      archived: games.filter(g => g.status === 'archived').length,
+    });
+  }, [games]);
+
+  const handleCreate = async (data: Omit<GameEntity, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await createGame(data);
+      setIsModalOpen(false);
+      showToast('success', 'Игра успешно добавлена');
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Не удалось добавить игру');
+    }
+  };
+
+  const handleUpdate = async (data: Omit<GameEntity, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!selectedGame) return;
+
+    try {
+      await updateGame(selectedGame.id, data);
+      setSelectedGame(null);
+      showToast('success', 'Игра успешно обновлена');
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Не удалось обновить игру');
+    }
+  };
+
+  const handleDelete = async (game: GameEntity) => {
+    if (!confirm('Вы уверены, что хотите удалить эту игру?')) return;
+
+    try {
+      await deleteGame(game.id);
+      showToast('success', 'Игра успешно удалена');
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Не удалось удалить игру');
+    }
+  };
+
+  if (error) {
+    return <div className="text-center py-12 text-red-400">{error}</div>;
+  }
 
   return (
     <div>
@@ -37,24 +85,51 @@ export default async function GamesDashboardPage() {
           <p className="text-gray-400 mt-1">Управление библиотекой игр</p>
         </div>
 
-        <button
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 
-                   text-white rounded-lg transition-colors duration-200"
-        >
+        <Button onClick={() => setIsModalOpen(true)}>
           <Plus className="w-5 h-5" />
           Добавить игру
-        </button>
+        </Button>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
-          </div>
-        }
+      <GameStats {...stats} />
+
+      <div className="mt-8">
+        <GameList
+          games={games}
+          onEdit={game => setSelectedGame(game)}
+          onDelete={handleDelete}
+          isLoading={isLoading}
+        />
+      </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Добавить игру"
+        size="lg"
       >
-        <GamesContent games={games} />
-      </Suspense>
+        <GameForm
+          onSubmit={handleCreate}
+          onCancel={() => setIsModalOpen(false)}
+          isLoading={isLoading}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={!!selectedGame}
+        onClose={() => setSelectedGame(null)}
+        title="Редактировать игру"
+        size="lg"
+      >
+        {selectedGame && (
+          <GameForm
+            initialData={selectedGame}
+            onSubmit={handleUpdate}
+            onCancel={() => setSelectedGame(null)}
+            isLoading={isLoading}
+          />
+        )}
+      </Modal>
     </div>
   );
 }
