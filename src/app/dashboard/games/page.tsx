@@ -1,12 +1,13 @@
 import { getGames } from '@/app/actions/games';
 import { AddGameForm } from '@/components/dashboard/AddGameForm';
 import { GamesList } from '@/components/dashboard/GamesList';
+import { Game } from '@/generated/prisma';
 import { Plus } from 'lucide-react';
 import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
 
-function GamesContent({ games }: { games: any[] }) {
+function GamesContent({ games }: { games: Game[] }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2">

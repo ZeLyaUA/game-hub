@@ -1,29 +1,25 @@
+// src/app/HomeClient.tsx
 'use client';
 
 import { BackgroundAnimation } from '@/components/BackgroundAnimation';
 import { GameCard } from '@/components/GameCard';
 import { HeroTitle } from '@/components/HeroTitle';
 import { Navbar } from '@/components/Navbar';
+import { GameWithIcon } from '@/types/game';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-interface Game {
-  id: string;
-  title: string;
-  status: string;
-  image: string;
-  description: string | null; // Изменено с string на string | null
-  color: string;
-  accent: string;
-  icon: React.ReactNode;
+interface HomeClientProps {
+  games: GameWithIcon[];
 }
 
-interface HomeClientProps {
-  games: Game[];
+interface MousePosition {
+  x: number;
+  y: number;
 }
 
 export default function HomeClient({ games }: HomeClientProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
   const [activeGame, setActiveGame] = useState<string | null>(null);
 
   useEffect(() => {

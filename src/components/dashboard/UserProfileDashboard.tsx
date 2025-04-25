@@ -1,13 +1,21 @@
+// src/components/dashboard/UserProfileDashboard.tsx
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
 import { useState } from 'react';
 
+interface UserInfo {
+  name: string;
+  email: string;
+  role: string;
+  avatar?: string;
+}
+
 export function UserProfileDashboard() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const user = {
+  const user: UserInfo = {
     name: 'Admin',
     email: 'admin@zelyave.com',
     role: 'Администратор',
@@ -31,7 +39,9 @@ export function UserProfileDashboard() {
           <div className="text-xs text-gray-400">{user.role}</div>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-gray-400 transition-transform hidden lg:block ${
+            isOpen ? 'rotate-180' : ''
+          }`}
         />
       </button>
 

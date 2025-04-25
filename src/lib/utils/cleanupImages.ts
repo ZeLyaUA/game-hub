@@ -1,9 +1,10 @@
 // src/lib/utils/cleanupImages.ts
 import { prisma } from '@/lib/prisma';
-import { readdir, unlink } from 'fs/promises';
+import { CleanupResponse } from '@/types/game';
+import fs from 'fs/promises';
 import path from 'path';
 
-export async function cleanupUnusedImages() {
+export async function cleanupUnusedImages(): Promise<CleanupResponse> {
   try {
     // Получаем все пути к изображениям из базы данных
     const games = await prisma.game.findMany({
@@ -13,7 +14,7 @@ export async function cleanupUnusedImages() {
     const usedImages = new Set(
       games
         .map(game => game.image)
-        .filter(image => image && image.startsWith('/uploads/'))
+        .filter((image): image is string => Boolean(image) && image.startsWith('/uploads/'))
         .map(image => path.basename(image))
     );
 
@@ -22,19 +23,25 @@ export async function cleanupUnusedImages() {
     let files: string[] = [];
 
     try {
-      files = await readdir(uploadsDir);
+      files = await fs.readdir(uploadsDir);
     } catch (error) {
       // Директория не существует
-      console.log(error);
+      console.log('Uploads directory does not exist:', error);
       return { success: true, deletedCount: 0 };
     }
 
     // Удаляем неиспользуемые файлы
     let deletedCount = 0;
+
     for (const file of files) {
-      if (!usedImages.has(file) && file !== '.gitignore') {
+      // Пропускаем .gitignore и другие системные файлы
+      if (file.startsWith('.') || !file.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
+        continue;
+      }
+
+      if (!usedImages.has(file)) {
         try {
-          await unlink(path.join(uploadsDir, file));
+          await fs.unlink(path.join(uploadsDir, file));
           deletedCount++;
         } catch (error) {
           console.error(`Failed to delete file ${file}:`, error);
@@ -45,6 +52,9 @@ export async function cleanupUnusedImages() {
     return { success: true, deletedCount };
   } catch (error) {
     console.error('Cleanup failed:', error);
-    return { success: false, error };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }

@@ -1,26 +1,11 @@
+// src/components/GameCard.tsx
 'use client';
 
+import { GameCardProps } from '@/types/game';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-interface GameCardProps {
-  game: {
-    id: string;
-    title: string;
-    status: string;
-    image: string;
-    description: string | null;
-    color: string;
-    accent: string;
-    icon: React.ReactNode;
-  };
-  index: number;
-  activeGame: string | null;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-}
 
 export function GameCard({ game, index, activeGame, onMouseEnter, onMouseLeave }: GameCardProps) {
   return (
@@ -52,7 +37,6 @@ export function GameCard({ game, index, activeGame, onMouseEnter, onMouseLeave }
               className="object-cover"
               sizes="(max-width: 768px) 280px, 256px"
               priority={game.status === 'active'}
-              style={{ objectFit: 'cover' }}
             />
 
             {/* Gradient overlay */}
@@ -94,7 +78,7 @@ export function GameCard({ game, index, activeGame, onMouseEnter, onMouseLeave }
                 )}
 
                 <h3 className="text-2xl font-bold text-white mb-2">{game.title}</h3>
-                <p className="text-gray-200 text-sm mb-4 opacity-90">{game.description || ''}</p>
+                <p className="text-gray-200 text-sm mb-4 opacity-90">{game.description ?? ''}</p>
 
                 <motion.div
                   className="flex items-center gap-2 text-white"

@@ -1,5 +1,6 @@
 // src/app/api/upload/route.ts
-import { unlink } from 'fs/promises';
+import { ApiError, UploadResponse } from '@/types/game';
+import fs from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import sharp from 'sharp';
@@ -7,16 +8,18 @@ import sharp from 'sharp';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const oldImagePath = formData.get('oldImagePath') as string;
+    const file = formData.get('file') as File | null;
+    const oldImagePath = formData.get('oldImagePath') as string | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'Файл не найден' }, { status: 400 });
+      const error: ApiError = { error: 'Файл не найден', status: 400 };
+      return NextResponse.json(error, { status: 400 });
     }
 
     // Проверяем тип файла
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Разрешены только изображения' }, { status: 400 });
+      const error: ApiError = { error: 'Разрешены только изображения', status: 400 };
+      return NextResponse.json(error, { status: 400 });
     }
 
     // Создаем уникальное имя файла
@@ -33,10 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Создаем директорию, если её нет
     try {
-      const fs = require('fs');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
+      await fs.mkdir(uploadDir, { recursive: true });
     } catch (err) {
       console.error('Error creating directory:', err);
     }
@@ -55,21 +55,21 @@ export async function POST(request: NextRequest) {
     if (oldImagePath && oldImagePath.startsWith('/uploads/')) {
       const oldFilePath = path.join(process.cwd(), 'public', oldImagePath);
       try {
-        await unlink(oldFilePath);
-      } catch (error: any) {
-        if (error.code !== 'ENOENT') {
-          // Игнорируем ошибку, если файл не существует
+        await fs.unlink(oldFilePath);
+      } catch (error) {
+        // Игнорируем ошибку, если файл не существует
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
           console.error('Error deleting old file:', error);
         }
       }
     }
 
     // Возвращаем URL загруженного файла
-    const imageUrl = `/uploads/${filename}`;
-
-    return NextResponse.json({ url: imageUrl });
+    const response: UploadResponse = { url: `/uploads/${filename}` };
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Ошибка при загрузке файла' }, { status: 500 });
+    const apiError: ApiError = { error: 'Ошибка при загрузке файла', status: 500 };
+    return NextResponse.json(apiError, { status: 500 });
   }
 }

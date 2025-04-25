@@ -1,9 +1,11 @@
+// src/app/actions/games.ts
 'use server';
 
+import { Game } from '@/generated/prisma';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
-export async function getGames() {
+export async function getGames(): Promise<Game[]> {
   try {
     const games = await prisma.game.findMany({
       orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
@@ -15,7 +17,7 @@ export async function getGames() {
   }
 }
 
-export async function getGameById(id: string) {
+export async function getGameById(id: string): Promise<Game | null> {
   try {
     const game = await prisma.game.findUnique({
       where: { id },
@@ -27,14 +29,16 @@ export async function getGameById(id: string) {
   }
 }
 
-export async function addGame(formData: FormData) {
+export async function addGame(
+  formData: FormData
+): Promise<{ success: boolean; game?: Game; error?: string }> {
   const title = formData.get('title') as string;
   const image = formData.get('image') as string;
   const description = formData.get('description') as string;
   const status = formData.get('status') as string;
 
   if (!title || !image) {
-    throw new Error('Title and image are required');
+    return { success: false, error: 'Title and image are required' };
   }
 
   const id = title.toLowerCase().replace(/\s+/g, '-');
@@ -58,11 +62,13 @@ export async function addGame(formData: FormData) {
     return { success: true, game: newGame };
   } catch (error) {
     console.error('Failed to add game:', error);
-    throw new Error('Failed to add game');
+    return { success: false, error: 'Failed to add game' };
   }
 }
 
-export async function updateGame(formData: FormData) {
+export async function updateGame(
+  formData: FormData
+): Promise<{ success: boolean; game?: Game; error?: string }> {
   const id = formData.get('id') as string;
   const title = formData.get('title') as string;
   const image = formData.get('image') as string;
@@ -72,7 +78,7 @@ export async function updateGame(formData: FormData) {
   const accent = formData.get('accent') as string;
 
   if (!id || !title || !image) {
-    throw new Error('ID, title and image are required');
+    return { success: false, error: 'ID, title and image are required' };
   }
 
   try {
@@ -81,7 +87,7 @@ export async function updateGame(formData: FormData) {
       data: {
         title,
         image,
-        description,
+        description: description || '',
         status,
         color,
         accent,
@@ -96,11 +102,11 @@ export async function updateGame(formData: FormData) {
     return { success: true, game: updatedGame };
   } catch (error) {
     console.error('Failed to update game:', error);
-    throw new Error('Failed to update game');
+    return { success: false, error: 'Failed to update game' };
   }
 }
 
-export async function deleteGame(id: string) {
+export async function deleteGame(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     await prisma.game.delete({
       where: { id },
@@ -112,6 +118,6 @@ export async function deleteGame(id: string) {
     return { success: true };
   } catch (error) {
     console.error('Failed to delete game:', error);
-    throw new Error('Failed to delete game');
+    return { success: false, error: 'Failed to delete game' };
   }
 }

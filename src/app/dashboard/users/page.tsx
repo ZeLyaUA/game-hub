@@ -1,11 +1,14 @@
+// src/app/dashboard/users/page.tsx
 'use client';
 
 import { formatDate } from '@/lib/utils/date';
+import { DashboardUser } from '@/types/game';
 import { motion } from 'framer-motion';
 import { Calendar, Filter, MoreVertical, Search, Shield, UserPlus, Users } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 
-const users = [
+const users: DashboardUser[] = [
   {
     id: 1,
     name: 'Александр Иванов',
@@ -36,13 +39,15 @@ const users = [
     lastActive: '2 дня назад',
     avatar: '/api/placeholder/100/100',
   },
-  // Add more users...
 ];
+
+type UserRole = 'all' | 'Администратор' | 'Модератор' | 'Пользователь';
+type UserStatus = 'all' | 'active' | 'inactive';
 
 export default function UsersDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('all');
+  const [selectedStatus, setSelectedStatus] = useState<UserStatus>('all');
 
   const filteredUsers = users.filter(user => {
     const matchesSearch =
@@ -142,7 +147,7 @@ export default function UsersDashboardPage() {
 
           <select
             value={selectedRole}
-            onChange={e => setSelectedRole(e.target.value)}
+            onChange={e => setSelectedRole(e.target.value as UserRole)}
             className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white
                      focus:outline-none focus:border-indigo-500"
           >
@@ -154,7 +159,7 @@ export default function UsersDashboardPage() {
 
           <select
             value={selectedStatus}
-            onChange={e => setSelectedStatus(e.target.value)}
+            onChange={e => setSelectedStatus(e.target.value as UserStatus)}
             className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white
                      focus:outline-none focus:border-indigo-500"
           >
@@ -209,7 +214,9 @@ export default function UsersDashboardPage() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full" />
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                        <Image src={user.avatar} alt={user.name} fill className="object-cover" />
+                      </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-white">{user.name}</div>
                         <div className="text-sm text-gray-400">{user.email}</div>

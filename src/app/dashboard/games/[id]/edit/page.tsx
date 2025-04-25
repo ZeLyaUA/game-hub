@@ -16,6 +16,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
 
+import Image from 'next/image';
+
 interface GameData {
   id: string;
   title: string;
@@ -35,7 +37,7 @@ export default function EditGamePage({ params }: { params: Promise<{ id: string 
   const [success, setSuccess] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>('');
-  const [originalImage, setOriginalImage] = useState<string>('');
+  const [, setOriginalImage] = useState<string>('');
 
   const [gameData, setGameData] = useState<GameData>({
     id: resolvedParams.id,
@@ -279,10 +281,11 @@ export default function EditGamePage({ params }: { params: Promise<{ id: string 
                   >
                     {previewImage ? (
                       <>
-                        <img
+                        <Image
                           src={previewImage}
                           alt="Preview"
                           className="w-full h-full object-cover rounded-lg"
+                          fill
                         />
                         {!isUploading && (
                           <button

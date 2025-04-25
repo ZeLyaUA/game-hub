@@ -1,21 +1,72 @@
+// src/components/dashboard/NotificationsDashboard.tsx
 'use client';
 
+import { DashboardNotification } from '@/types/game';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, Bell, CheckCheck, CheckCircle, Info, X } from 'lucide-react';
 import { useState } from 'react';
 
-interface Notification {
-  id: string;
-  type: 'success' | 'error' | 'info' | 'warning';
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
+interface NotificationItemProps {
+  notification: DashboardNotification;
+  onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+function NotificationItem({ notification, onMarkAsRead, onDelete }: NotificationItemProps) {
+  const getIcon = (type: DashboardNotification['type']) => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="w-5 h-5 text-green-400" />;
+      case 'error':
+        return <AlertCircle className="w-5 h-5 text-red-400" />;
+      case 'warning':
+        return <AlertCircle className="w-5 h-5 text-orange-400" />;
+      default:
+        return <Info className="w-5 h-5 text-blue-400" />;
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      className={`p-4 border-b border-gray-800 last:border-0 hover:bg-gray-800/50 
+           transition-colors ${!notification.read ? 'bg-gray-800/30' : ''}`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="mt-1">{getIcon(notification.type)}</div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-white">{notification.title}</h4>
+            <button
+              onClick={() => onDelete(notification.id)}
+              className="text-gray-400 hover:text-red-400 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-sm text-gray-400 mt-1">{notification.message}</p>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-gray-500">{notification.time}</span>
+            {!notification.read && (
+              <button
+                onClick={() => onMarkAsRead(notification.id)}
+                className="text-xs text-indigo-400 hover:text-indigo-300"
+              >
+                Прочитано
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 export function NotificationsDashboard() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
+  const [notifications, setNotifications] = useState<DashboardNotification[]>([
     {
       id: '1',
       type: 'success',
@@ -64,19 +115,6 @@ export function NotificationsDashboard() {
     setNotifications(notifications.filter(notif => notif.id !== id));
   };
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-400" />;
-      case 'error':
-        return <AlertCircle className="w-5 h-5 text-red-400" />;
-      case 'warning':
-        return <AlertCircle className="w-5 h-5 text-orange-400" />;
-      default:
-        return <Info className="w-5 h-5 text-blue-400" />;
-    }
-  };
-
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
@@ -91,7 +129,6 @@ export function NotificationsDashboard() {
         )}
       </button>
 
-      {/* Notifications panel */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -123,41 +160,12 @@ export function NotificationsDashboard() {
               <div className="max-h-96 overflow-y-auto">
                 <AnimatePresence>
                   {notifications.map(notification => (
-                    <motion.div
+                    <NotificationItem
                       key={notification.id}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: 100 }}
-                      className={`p-4 border-b border-gray-800 last:border-0 hover:bg-gray-800/50 
-                           transition-colors ${!notification.read ? 'bg-gray-800/30' : ''}`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1">{getIcon(notification.type)}</div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-medium text-white">{notification.title}</h4>
-                            <button
-                              onClick={() => deleteNotification(notification.id)}
-                              className="text-gray-400 hover:text-red-400 transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <p className="text-sm text-gray-400 mt-1">{notification.message}</p>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-gray-500">{notification.time}</span>
-                            {!notification.read && (
-                              <button
-                                onClick={() => markAsRead(notification.id)}
-                                className="text-xs text-indigo-400 hover:text-indigo-300"
-                              >
-                                Прочитано
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                      notification={notification}
+                      onMarkAsRead={markAsRead}
+                      onDelete={deleteNotification}
+                    />
                   ))}
                 </AnimatePresence>
 
