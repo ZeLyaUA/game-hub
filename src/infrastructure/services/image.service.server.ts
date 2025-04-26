@@ -1,24 +1,47 @@
 // src/infrastructure/services/image.service.server.ts
 import { IImageService, ImageUploadOptions } from '@/domain/services/image.service';
 import { URL } from '@/domain/types/common';
-import { prisma } from '@/lib/prisma';
-import { readdir, unlink } from 'fs/promises';
+import { PrismaClient } from '@/generated/prisma';
+import fs from 'fs';
+import { mkdir, readdir, unlink } from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
 
 export class ImageServiceServerImpl implements IImageService {
   private readonly uploadDir = path.join(process.cwd(), 'public', 'uploads');
+  private readonly prisma: PrismaClient;
+
+  constructor() {
+    this.prisma = new PrismaClient();
+    // Создаем директорию uploads при инициализации сервиса, если её нет
+    this.ensureUploadDirExists();
+  }
+
+  private async ensureUploadDirExists() {
+    try {
+      await mkdir(this.uploadDir, { recursive: true });
+    } catch (error) {
+      console.error('Failed to create upload directory:', error);
+    }
+  }
 
   async upload(file: File, options?: ImageUploadOptions): Promise<URL> {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const optimizedBuffer = await this.optimize(buffer, options);
+    try {
+      await this.ensureUploadDirExists();
 
-    const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webp`;
-    const filepath = path.join(this.uploadDir, filename);
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const optimizedBuffer = await this.optimize(buffer, options);
 
-    await sharp(optimizedBuffer).toFile(filepath);
+      const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webp`;
+      const filepath = path.join(this.uploadDir, filename);
 
-    return `/uploads/${filename}`;
+      await sharp(optimizedBuffer).toFile(filepath);
+
+      return `/uploads/${filename}`;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
   }
 
   async delete(url: URL): Promise<void> {
@@ -29,9 +52,17 @@ export class ImageServiceServerImpl implements IImageService {
     const filepath = path.join(process.cwd(), 'public', url);
 
     try {
-      await unlink(filepath);
-    } catch (error: any) {
-      if (error.code !== 'ENOENT') {
+      // Проверяем существование файла перед удалением
+      if (fs.existsSync(filepath)) {
+        await unlink(filepath);
+        console.log(`Deleted file: ${url}`);
+      } else {
+        console.log(`File not found: ${url}`);
+      }
+    } catch (error: unknown) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'ENOENT') {
+        console.error(`Error deleting file ${url}:`, error);
         throw error;
       }
     }
@@ -57,39 +88,61 @@ export class ImageServiceServerImpl implements IImageService {
   }
 
   async cleanup(): Promise<{ deletedCount: number }> {
-    const games = await prisma.game.findMany({
-      select: { image: true },
-    });
-
-    const usedImages = new Set(
-      games
-        .map(game => game.image)
-        .filter(image => image && image.startsWith('/uploads/'))
-        .map(image => path.basename(image))
-    );
-
-    let files: string[] = [];
-
     try {
-      files = await readdir(this.uploadDir);
-    } catch (error) {
-      console.error('Failed to read upload directory:', error);
-      return { deletedCount: 0 };
-    }
+      const games = await this.prisma.game.findMany({
+        select: { image: true },
+      });
 
-    let deletedCount = 0;
+      const usedImages = new Set(
+        games
+          .map(game => game.image)
+          .filter(image => image && image.startsWith('/uploads/'))
+          .map(image => path.basename(image))
+      );
 
-    for (const file of files) {
-      if (!usedImages.has(file) && file !== '.gitignore') {
-        try {
-          await unlink(path.join(this.uploadDir, file));
-          deletedCount++;
-        } catch (error) {
-          console.error(`Failed to delete file ${file}:`, error);
+      // Проверяем существование директории
+      try {
+        await fs.promises.access(this.uploadDir);
+      } catch {
+        await this.ensureUploadDirExists();
+        return { deletedCount: 0 };
+      }
+
+      let files: string[] = [];
+
+      try {
+        files = await readdir(this.uploadDir);
+      } catch (error) {
+        console.error('Failed to read upload directory:', error);
+        return { deletedCount: 0 };
+      }
+
+      let deletedCount = 0;
+
+      for (const file of files) {
+        // Пропускаем .gitignore и другие системные файлы
+        if (file.startsWith('.') || !file.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
+          continue;
+        }
+
+        if (!usedImages.has(file)) {
+          try {
+            const filePath = path.join(this.uploadDir, file);
+            await unlink(filePath);
+            deletedCount++;
+            console.log(`Deleted unused file: ${file}`);
+          } catch (error) {
+            console.error(`Failed to delete file ${file}:`, error);
+          }
         }
       }
-    }
 
-    return { deletedCount };
+      return { deletedCount };
+    } catch (error) {
+      console.error('Cleanup error:', error);
+      throw error;
+    } finally {
+      await this.prisma.$disconnect();
+    }
   }
 }

@@ -1,5 +1,4 @@
 // src/app/api/upload/delete/route.ts
-import { IImageService } from '@/domain/services/image.service';
 import { getServerContainer } from '@/infrastructure/di/getServerContainer';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -12,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const container = getServerContainer();
-    const imageService = container.resolve<IImageService>('ImageService');
+    const imageService = container.resolve('ImageService');
 
     await imageService.delete(filePath);
 

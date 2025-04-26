@@ -2,7 +2,7 @@
 import { GameEntity, GameStatus } from '@/domain/entities/game';
 import { GameFilters, IGameRepository } from '@/domain/repositories/game.repository';
 import { Pagination, SortOptions } from '@/domain/types/common';
-import { PrismaClient } from '@/generated/prisma';
+import { Prisma, PrismaClient, Game as PrismaGame } from '@/generated/prisma';
 
 export class GameRepositoryImpl implements IGameRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -70,8 +70,8 @@ export class GameRepositoryImpl implements IGameRepository {
     return this.prisma.game.count({ where });
   }
 
-  private buildWhereClause(filters?: GameFilters) {
-    const where: any = {};
+  private buildWhereClause(filters?: GameFilters): Prisma.GameWhereInput {
+    const where: Prisma.GameWhereInput = {};
 
     if (filters?.status) {
       where.status = filters.status.toString();
@@ -87,7 +87,7 @@ export class GameRepositoryImpl implements IGameRepository {
     return where;
   }
 
-  private mapToEntity(game: any): GameEntity {
+  private mapToEntity(game: PrismaGame): GameEntity {
     return {
       id: game.id,
       title: game.title,

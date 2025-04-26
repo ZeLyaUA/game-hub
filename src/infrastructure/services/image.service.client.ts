@@ -38,7 +38,8 @@ export class ImageServiceClientImpl implements IImageService {
     }
   }
 
-  async optimize(buffer: Buffer, options?: ImageUploadOptions): Promise<Buffer> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async optimize(_buffer: Buffer, _options?: ImageUploadOptions): Promise<Buffer> {
     throw new Error('Optimize is not available on client side');
   }
 

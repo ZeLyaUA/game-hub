@@ -1,13 +1,13 @@
 // src/app/api/games/route.ts
 import { GameStatus } from '@/domain/entities/game';
-import { IGameService } from '@/domain/services/game.service';
-import { container } from '@/infrastructure/di/container';
+import { getServerContainer } from '@/infrastructure/di/getServerContainer';
 import { NextRequest, NextResponse } from 'next/server';
-
-const gameService = container.resolve<IGameService>('GameService');
 
 export async function GET(request: NextRequest) {
   try {
+    const container = getServerContainer();
+    const gameService = container.resolve('GameService');
+
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status') as GameStatus | null;
     const search = searchParams.get('search') || undefined;
@@ -31,6 +31,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const container = getServerContainer();
+    const gameService = container.resolve('GameService');
+
     const data = await request.json();
     const game = await gameService.createGame(data);
     return NextResponse.json(game);

@@ -1,6 +1,4 @@
 // src/presentation/hooks/useGameStats.ts
-import { IGameService } from '@/domain/services/game.service';
-import { container } from '@/infrastructure/di/container';
 import { useCallback, useState } from 'react';
 
 export function useGameStats() {
@@ -13,21 +11,21 @@ export function useGameStats() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const gameService = container.resolve<IGameService>('GameService');
-
   const fetchStats = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await gameService.getStats();
+      // Используем API вместо прямого доступа к сервису на клиенте
+      const response = await fetch('/api/games/stats');
+      const result = await response.json();
       setStats(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch stats');
     } finally {
       setIsLoading(false);
     }
-  }, [gameService]);
+  }, []);
 
   return {
     stats,

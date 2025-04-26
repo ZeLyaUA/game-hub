@@ -3,27 +3,30 @@ import { PrismaClient } from '@/generated/prisma';
 import { GameRepositoryImpl } from '../repositories/game.repository.impl';
 import { GameServiceImpl } from '../services/game.service.impl';
 import { ImageServiceServerImpl } from '../services/image.service.server';
+import { Container, IContainer } from './types';
 
-export function getServerContainer() {
-  const container = new Map<string, any>();
+// Создаем глобальный экземпляр PrismaClient для переиспользования
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-  const prisma = new PrismaClient();
+const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
+
+export function getServerContainer(): IContainer {
+  const container = new Container();
+
   const gameRepository = new GameRepositoryImpl(prisma);
   const gameService = new GameServiceImpl(gameRepository);
   const imageService = new ImageServiceServerImpl();
 
-  container.set('PrismaClient', prisma);
-  container.set('GameRepository', gameRepository);
-  container.set('GameService', gameService);
-  container.set('ImageService', imageService);
+  container.register('PrismaClient', prisma);
+  container.register('GameRepository', gameRepository);
+  container.register('GameService', gameService);
+  container.register('ImageService', imageService);
 
-  return {
-    resolve: <T>(token: string): T => {
-      const instance = container.get(token);
-      if (!instance) {
-        throw new Error(`No instance found for token: ${token}`);
-      }
-      return instance;
-    },
-  };
+  return container;
 }
